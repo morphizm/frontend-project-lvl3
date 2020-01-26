@@ -11,11 +11,24 @@ module.exports = {
           loader: 'babel-loader',
         },
       },
+      {
+        test: /\.(scss)$/,
+        use: [{
+          loader: 'style-loader', // inject CSS to page
+        },
+        {
+          loader: 'css-loader', // translates CSS into CommonJS modules
+        },
+        {
+          loader: 'sass-loader', // compiles Sass to CSS
+        }],
+      },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'template.html',
+      title: 'RSS',
+      template: 'index.html',
     }),
   ],
 };
