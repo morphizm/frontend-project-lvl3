@@ -1,6 +1,6 @@
 import '@babel/polyfill';
 import 'bootstrap';
-import './_custom.scss';
+import './custom.scss';
 import Example from './Example';
 
 export default () => {
