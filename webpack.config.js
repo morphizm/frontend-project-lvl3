@@ -13,15 +13,16 @@ module.exports = {
       },
       {
         test: /\.(scss)$/,
-        use: [{
-          loader: 'style-loader', // inject CSS to page
-        },
-        {
-          loader: 'css-loader', // translates CSS into CommonJS modules
-        },
-        {
-          loader: 'sass-loader', // compiles Sass to CSS
-        }],
+        use: ['style-loader', 'css-loader', 'sass-loader'],
+        // use: [{
+        //   loader: 'style-loader', // inject CSS to page
+        // },
+        // {
+        //   loader: 'css-loader', // translates CSS into CommonJS modules
+        // },
+        // {
+        //   loader: 'sass-loader', // compiles Sass to CSS
+        // }],
       },
     ],
   },
