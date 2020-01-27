@@ -16,7 +16,6 @@ const parse = (rss) => {
   const descriptionElement = rss.querySelector('description');
   const description = descriptionElement.textContent;
   const itemElements = rss.querySelectorAll('item');
-  console.log(itemElements[0]);
   const items = [...itemElements].map((i) => ({ text: getItemContent(i), link: getItemLink(i) }));
   return {
     title,

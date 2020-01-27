@@ -16,6 +16,16 @@ const renderItems = (items) => {
   `;
 };
 
+export const renderValidBorder = (element, isValid) => {
+  if (isValid) {
+    element.classList.add('is-valid');
+    element.classList.remove('is-invalid');
+  } else {
+    element.classList.add('is-invalid');
+    element.classList.remove('is-valid');
+  }
+};
+
 const render = (element, data) => {
   const { title, description, items } = data;
   const div = document.createElement('div');
