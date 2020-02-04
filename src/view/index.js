@@ -24,7 +24,7 @@ const render = (elements, state) => {
     content, urlInput,
   } = elements;
 
-  watch(state, 'isValidUrl', () => {
+  watch(state, 'urlState', () => {
     const { urlState } = state;
     switch (urlState) {
       case 'valid': {
@@ -45,10 +45,11 @@ const render = (elements, state) => {
   });
 
   watch(state, 'feedList', () => {
+    content.innerHTML = '';
     state.feedList.forEach((l) => {
       const { title, description, items } = l;
       const div = document.createElement('div');
-      div.classList.add('card');
+      div.classList.add('card', 'mt-5');
       const text = `
         <div class="card mb-0">
           <div class="card-header">
