@@ -4,8 +4,8 @@ import axios from 'axios';
 import WatchJS from 'melanke-watchjs';
 import validator from 'validator';
 import './styles/custom.scss';
-import parse from './rssparser';
-import render, { renderValidBorder } from './render';
+import parse from './parsers/rssparser';
+import render, { renderValidBorder } from './renders/render';
 
 // setAttribute('disabled', true);
 const doRequest = (url, proxy) => {
