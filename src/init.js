@@ -6,13 +6,11 @@ import _ from 'lodash';
 import i18next from 'i18next';
 
 import './styles/custom.scss';
-import parse from './parsers/rssparser';
+import parse from './parsers/rssParser';
 import render from './view';
 import resources from './locales';
 
-const doRequest = (url, proxy) => {
-  return axios.get(`https://${proxy}/${url}`);
-};
+const doRequest = (url, proxy) => axios.get(`https://${proxy}/${url}`);
 
 i18next.init({
   lng: 'en',
@@ -23,7 +21,6 @@ i18next.init({
 // Предпочитайте композицию (пайплайн) вместо матрешки функций.
 // valid, invalid, blank
 export default () => {
-  const domparser = new DOMParser();
   const initLink = {
     id: _.uniqueId(),
     url: 'http://a.ru',
@@ -39,10 +36,10 @@ export default () => {
     errors: {},
   };
 
-  const repl = 'repl.it/@enmalafeev/RSS-reader';
+  // const repl = 'repl.it/@enmalafeev/RSS-reader';
   const proxy = 'cors-anywhere.herokuapp.com';
   const loremRss = 'https://lorem-rss.herokuapp.com/feed';
-  const cv = 'https://cv.hexlet.io/resumes.rss';
+  // const cv = 'https://cv.hexlet.io/resumes.rss';
 
   const elements = {
     container: document.querySelector('.container'),
@@ -51,7 +48,7 @@ export default () => {
     urlInput: document.querySelector('input'),
   };
 
-  const handleChange = ({ target: { value } }) => {
+  const handleInput = ({ target: { value } }) => {
     state.currentURL = value;
     if (value === '') {
       state.urlState = 'blank';
@@ -66,16 +63,16 @@ export default () => {
       });
   };
 
+  const domparser = new DOMParser();
   const handleSubmit = (e) => {
     e.preventDefault();
     const { feedList, currentURL, urlState } = state;
     if (urlState !== 'valid') {
       return;
     }
-
     doRequest(currentURL, proxy)
-      .then((e) => {
-        const { data } = e;
+      .then((result) => {
+        const { data } = result;
         const rssDocument = domparser.parseFromString(data, 'text/xml');
         const parsedData = parse(rssDocument);
         const newFeed = {
@@ -87,14 +84,13 @@ export default () => {
       });
   };
 
-  elements.urlInput.addEventListener('input', handleChange);
+  elements.urlInput.addEventListener('input', handleInput);
   elements.form.addEventListener('submit', handleSubmit);
 
   doRequest(loremRss, proxy)
     .then((e) => {
       const { data } = e;
       const rssDocument = domparser.parseFromString(data, 'text/xml');
-      // console.log(parsedData)
       const parsedData = parse(rssDocument);
       const newFeed = {
         url: loremRss,
