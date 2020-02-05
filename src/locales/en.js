@@ -1,7 +1,8 @@
 const en = {
   translation: {
     key: 'Lol',
-    loading: 'Loading...',
+    loading: 'Loading',
+    failLoadResource: 'An error occurred while loading a feed. Try again.',
   },
 };
 

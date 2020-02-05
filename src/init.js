@@ -24,22 +24,28 @@ export default () => {
     url: 'http://a.ru',
     title: 'My title',
     description: 'My description',
-    posts: [],
   };
 
   const state = {
+    form: {
+      processState: 'filling',
+      fields: {
+        url: '',
+      },
+      valid: false,
+    },
     feedList: [initLink],
-    currentUrl: '',
-    urlState: 'blank',
-    formState: 'filling',
+    posts: [{ text: 'My text', link: 'my link', feedId: initLink.id }],
     errors: {},
-    posts: [{ text: 'My text', link: 'my link' }],
   };
 
-  // const repl = 'repl.it/@enmalafeev/RSS-reader';
   const proxy = 'cors-anywhere.herokuapp.com';
   const loremRss = 'https://lorem-rss.herokuapp.com/feed';
   // const cv = 'https://cv.hexlet.io/resumes.rss';
+
+  // currentUrl: '',
+  // urlState: 'blank',
+  // formState: 'filling',
 
   const elements = {
     container: document.querySelector('.container'),
@@ -50,17 +56,17 @@ export default () => {
   };
 
   const handleInput = ({ target: { value } }) => {
-    state.currentUrl = value;
+    state.form.fields.url = value;
     if (value === '') {
-      state.urlState = 'blank';
+      state.form.valid = false;
       return;
     }
 
     const schema = string().url();
-    const hasFeedListURL = state.feedList.every((l) => l.url !== state.currentUrl);
-    schema.isValid(state.currentUrl)
+    const hasFeedListURL = state.feedList.every((list) => list.url !== state.form.fields.url);
+    schema.isValid(state.form.fields.url)
       .then((result) => {
-        state.urlState = (result && hasFeedListURL) ? 'valid' : 'invalid';
+        state.form.valid = (result && hasFeedListURL);
       });
   };
 
@@ -68,20 +74,21 @@ export default () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const {
-      feedList, currentUrl, urlState, posts,
+      feedList, posts, form,
     } = state;
-    if ((urlState !== 'valid') || state.formState !== 'filling') {
+
+    if (!form.valid || form.processState !== 'filling') {
       return;
     }
-    state.formState = 'pending';
-    request(currentUrl, proxy)
+    form.processState = 'pending';
+    request(form.fields.url, proxy)
       .then((result) => {
         const { data } = result;
         const rssDocument = domparser.parseFromString(data, 'text/xml');
         const { title, description, items } = parse(rssDocument);
         const newFeed = {
-          url: currentUrl,
           id: _.uniqueId(),
+          url: form.fields.url,
           title,
           description,
         };
@@ -92,11 +99,11 @@ export default () => {
         feedList.push(newFeed);
         posts.push(...postsWithId);
       }).catch(() => {
-        state.formState = 'failure';
+        form.processState = 'failure';
       }).finally(() => {
-        state.currentUrl = '';
-        state.urlState = 'blank';
-        state.formState = 'filling';
+        form.fields.url = '';
+        form.valid = false;
+        form.processState = 'filling';
       });
   };
 
@@ -107,13 +114,19 @@ export default () => {
     .then((e) => {
       const { data } = e;
       const rssDocument = domparser.parseFromString(data, 'text/xml');
-      const parsedData = parse(rssDocument);
+      const { title, description, items } = parse(rssDocument);
       const newFeed = {
         url: loremRss,
         id: _.uniqueId(),
-        ...parsedData,
+        title,
+        description,
       };
+      const postsWithId = items.map((post) => (
+        { ...post, id: _.uniqueId(), feedId: newFeed.id }
+      ));
+
       state.feedList.push(newFeed);
+      state.posts.push(...postsWithId);
     });
 
   render(elements, state);

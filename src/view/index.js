@@ -23,14 +23,24 @@ const renderSpinner = (element) => {
   const div = document.createElement('div');
   div.classList.add('spinner-border');
   div.setAttribute('role', 'status');
-  const span = `<span class="sr-only">${i18next.t('.loading')}...</span>`;
+  const span = `<span class="sr-only">${i18next.t('loading')}...</span>`;
   div.innerHTML = span;
   element.prepend(div);
 };
 
 const deleteSpinner = () => {
   const spinnerElement = document.querySelector('.spinner-border');
-  spinnerElement.remove();
+  if (spinnerElement) {
+    spinnerElement.remove();
+  }
+};
+
+const renderFailLoadResource = (element) => {
+  const div = document.createElement('div');
+  div.classList.add('alert', 'alert-info');
+  div.setAttribute('role', 'alert');
+  div.innerHTML = i18next.t('failLoadResource');
+  element.prepend(div);
 };
 
 const render = (elements, state) => {
@@ -38,41 +48,28 @@ const render = (elements, state) => {
     content, urlInput, submit,
   } = elements;
 
-  // renderSpinner(content);
-  watch(state, 'urlState', () => {
-    const { urlState } = state;
-    switch (urlState) {
-      case 'valid': {
-        submit.removeAttribute('disabled');
-        urlInput.classList.add('is-valid');
-        urlInput.classList.remove('is-invalid');
-        break;
-      }
-      case 'invalid': {
-        submit.setAttribute('disabled', true);
-        urlInput.classList.add('is-invalid');
-        urlInput.classList.remove('is-valid');
-        break;
-      }
-      default: {
-        submit.setAttribute('disabled', true);
-        urlInput.classList.remove('is-valid');
-        urlInput.classList.remove('is-invalid');
-        urlInput.value = '';
-      }
+  // console.log(i18next.t('loading'))
+
+  watch(state, 'form', () => {
+    const { form: { valid, fields } } = state;
+    if (valid || fields.url === '') {
+      submit.removeAttribute('disabled');
+      urlInput.classList.remove('is-invalid');
+      return;
     }
+    submit.setAttribute('disabled', true);
+    urlInput.classList.add('is-invalid');
   });
 
-  watch(state, 'currentUrl', () => {
-    const { currentUrl } = state;
-    urlInput.value = currentUrl;
-  });
+  // watch(state.form, 'fields', () => {
+  // });
 
   watch(state, 'feedList', () => {
-    // content.innerHTML = '';
+    content.innerHTML = '';
     const { feedList, posts } = state;
-    feedList.forEach((l) => {
-      const { title, description } = l;
+    feedList.forEach((list) => {
+      const { title, description, id } = list;
+      const feedPosts = posts.filter((post) => post.feedId === id);
       const div = document.createElement('div');
       div.classList.add('card', 'mt-5');
       const text = `
@@ -82,7 +79,7 @@ const render = (elements, state) => {
           </div>
           <div class="card-body pb-1">
             <p class="card-text">${description}</p>
-            ${renderItems(posts)}
+            ${renderItems(feedPosts)}
           </div>
         </div>
       `;
@@ -91,12 +88,12 @@ const render = (elements, state) => {
     });
   });
 
-  watch(state, 'formState', () => {
-    const { formState } = state;
-    switch (formState) {
+  watch(state.form, 'processState', () => {
+    const { form: { processState } } = state;
+    switch (processState) {
       case 'filling': {
         deleteSpinner();
-        submit.removeAttribute('disabled');
+        // submit.removeAttribute('disabled');
         break;
       }
       case 'pending': {
@@ -106,6 +103,7 @@ const render = (elements, state) => {
         break;
       }
       case 'failure': {
+        renderFailLoadResource(content);
         break;
       }
       default:
