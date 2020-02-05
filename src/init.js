@@ -1,6 +1,5 @@
 import '@babel/polyfill';
 import 'bootstrap';
-import axios from 'axios';
 import { string } from 'yup';
 import _ from 'lodash';
 import i18next from 'i18next';
@@ -9,8 +8,7 @@ import './styles/custom.scss';
 import parse from './parsers/rssParser';
 import render from './view';
 import resources from './locales';
-
-const doRequest = (url, proxy) => axios.get(`https://${proxy}/${url}`);
+import request from './utils/request';
 
 i18next.init({
   lng: 'en',
@@ -26,14 +24,16 @@ export default () => {
     url: 'http://a.ru',
     title: 'My title',
     description: 'My description',
-    items: [],
+    posts: [],
   };
 
   const state = {
     feedList: [initLink],
-    currentURL: '',
+    currentUrl: '',
     urlState: 'blank',
+    formState: 'filling',
     errors: {},
+    posts: [{ text: 'My text', link: 'my link' }],
   };
 
   // const repl = 'repl.it/@enmalafeev/RSS-reader';
@@ -46,18 +46,19 @@ export default () => {
     content: document.querySelector('.content'),
     form: document.querySelector('form'),
     urlInput: document.querySelector('input'),
+    submit: document.querySelector('[type="submit"]'),
   };
 
   const handleInput = ({ target: { value } }) => {
-    state.currentURL = value;
+    state.currentUrl = value;
     if (value === '') {
       state.urlState = 'blank';
       return;
     }
 
     const schema = string().url();
-    const hasFeedListURL = state.feedList.every((l) => l.url !== state.currentURL);
-    schema.isValid(state.currentURL)
+    const hasFeedListURL = state.feedList.every((l) => l.url !== state.currentUrl);
+    schema.isValid(state.currentUrl)
       .then((result) => {
         state.urlState = (result && hasFeedListURL) ? 'valid' : 'invalid';
       });
@@ -66,28 +67,43 @@ export default () => {
   const domparser = new DOMParser();
   const handleSubmit = (e) => {
     e.preventDefault();
-    const { feedList, currentURL, urlState } = state;
-    if (urlState !== 'valid') {
+    const {
+      feedList, currentUrl, urlState, posts,
+    } = state;
+    if ((urlState !== 'valid') || state.formState !== 'filling') {
       return;
     }
-    doRequest(currentURL, proxy)
+    state.formState = 'pending';
+    request(currentUrl, proxy)
       .then((result) => {
         const { data } = result;
         const rssDocument = domparser.parseFromString(data, 'text/xml');
-        const parsedData = parse(rssDocument);
+        const { title, description, items } = parse(rssDocument);
         const newFeed = {
-          url: currentURL,
+          url: currentUrl,
           id: _.uniqueId(),
-          ...parsedData,
+          title,
+          description,
         };
+        const postsWithId = items.map((post) => (
+          { ...post, id: _.uniqueId(), feedId: newFeed.id }
+        ));
+
         feedList.push(newFeed);
+        posts.push(...postsWithId);
+      }).catch(() => {
+        state.formState = 'failure';
+      }).finally(() => {
+        state.currentUrl = '';
+        state.urlState = 'blank';
+        state.formState = 'filling';
       });
   };
 
   elements.urlInput.addEventListener('input', handleInput);
   elements.form.addEventListener('submit', handleSubmit);
 
-  doRequest(loremRss, proxy)
+  request(loremRss, proxy)
     .then((e) => {
       const { data } = e;
       const rssDocument = domparser.parseFromString(data, 'text/xml');
