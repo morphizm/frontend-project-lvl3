@@ -162,10 +162,8 @@ export default () => {
           const { items } = parsedRss;
           const newItems = items.filter((item) => {
             const { publishDate } = item;
-
             return oldFeedPublishDate < publishDate;
           });
-
           const postsWithId = newItems.map((post) => (
             { ...post, id: _.uniqueId(), feedId: id }
           ));

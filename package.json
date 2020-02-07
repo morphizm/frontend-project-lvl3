@@ -1,14 +1,16 @@
 {
-  "name": "rss",
+  "name": "rss-morph",
   "version": "1.0.0",
-  "description": "",
+  "description": "RSS feed in real-time",
+  "keywords": [
+    "RSS"
+  ],
   "main": "dist/index.js",
   "scripts": {
     "babel-node": "babel-node",
     "eslint": "eslint",
     "build": "NODE_ENV=production babel src --out-dir dist --source-maps inline",
-    "prepublishOnly": "npm run build",
-    "test": "jest"
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -16,10 +18,6 @@
   },
   "author": "morphizm",
   "license": "ISC",
-  "jest": {
-    "verbose": true,
-    "testURL": "http://localhost/"
-  },
   "files": [
     "dist"
   ],
@@ -34,7 +32,6 @@
     "@babel/preset-env": "^7.6.0",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^10.0.3",
-    "babel-jest": "^24.9.0",
     "babel-loader": "^8.0.5",
     "debug": "^4.1.1",
     "eslint": "^6.8.0",
@@ -42,13 +39,11 @@
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-babel": "^5.3.0",
     "eslint-plugin-import": "^2.20.0",
-    "eslint-plugin-jest": "^22.17.0",
     "html-webpack-plugin": "^3.2.0",
-    "jest": "^24.9.0",
-    "jest-cli": "^24.9.0",
-    "node-sass": "^4.13.1",
-    "postcss-loader": "^3.0.0",
+    "style-loader": "^1.1.3",
     "sass-loader": "^8.0.2",
+    "css-loader": "^3.4.2",
+    "node-sass": "^4.13.1",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.1.1",
     "webpack-dev-server": "^3.1.10"
@@ -56,22 +51,13 @@
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
     "@popperjs/core": "^2.0.0",
-    "autoprefixer": "^9.7.4",
     "axios": "^0.19.2",
     "bootstrap": "^4.4.1",
-    "commander": "^3.0.1",
-    "css-loader": "^3.4.2",
-    "fs": "0.0.1-security",
     "i18next": "^19.1.0",
     "jquery": "^3.4.1",
     "lodash": "^4.17.15",
     "melanke-watchjs": "^1.5.0",
-    "path": "^0.12.7",
     "popper.js": "^1.16.1",
-    "precss": "^4.0.0",
-    "style-loader": "^1.1.3",
-    "url": "^0.11.0",
-    "validator": "^12.2.0",
     "yup": "^0.28.1"
   }
 }
