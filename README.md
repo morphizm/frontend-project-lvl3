@@ -5,8 +5,8 @@
 
 ## Domain name
 ```sh
-(https://frontend-project-lvl3-five.now.sh](https://frontend-project-lvl3-five.now.sh)
-[stupid-self.surge.sh](stupid-self.surge.sh)
+[https://frontend-project-lvl3-five.now.sh](https://frontend-project-lvl3-five.now.sh)
+[http://stupid-self.surge.sh](http://stupid-self.surge.sh)
 ```
 
 ## Setup 
