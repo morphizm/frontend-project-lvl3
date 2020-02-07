@@ -116,7 +116,6 @@ const render = (elements, state) => {
         break;
       }
       default:
-        throw new Error('WHA?t');
     }
   });
 

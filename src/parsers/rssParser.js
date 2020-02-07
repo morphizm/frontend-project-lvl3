@@ -6,19 +6,21 @@ const getPublishDate = (item) => {
 
 const getLink = (item) => {
   const linkElement = item.querySelector('link');
-  const link = linkElement.textContent;
-  return link;
+  return linkElement.textContent;
 };
 
 const getDescription = (item) => {
   const contentElement = item.querySelector('description');
-  const content = contentElement.textContent;
-  return content;
+  return contentElement.textContent;
+};
+
+const getTitle = (item) => {
+  const titleElement = item.querySelector('title');
+  return titleElement.textContent;
 };
 
 const parse = (rssDocument) => {
-  const titleElement = rssDocument.querySelector('title');
-  const title = titleElement.textContent;
+  const title = getTitle(rssDocument);
   const description = getDescription(rssDocument);
   const publishDate = getPublishDate(rssDocument);
   const itemElements = rssDocument.querySelectorAll('item');
