@@ -16,6 +16,10 @@ i18next.init({
   resources,
 });
 
+const updateValidationState = (state) => {
+  
+};
+
 // Предпочитайте композицию (пайплайн) вместо матрешки функций.
 // valid, invalid, blank
 export default () => {
@@ -43,10 +47,6 @@ export default () => {
   const loremRss = 'https://lorem-rss.herokuapp.com/feed';
   // const cv = 'https://cv.hexlet.io/resumes.rss';
 
-  // currentUrl: '',
-  // urlState: 'blank',
-  // formState: 'filling',
-
   const elements = {
     container: document.querySelector('.container'),
     content: document.querySelector('.content'),
@@ -64,7 +64,7 @@ export default () => {
 
     const schema = string().url();
     const hasFeedListURL = state.feedList.every((list) => list.url !== state.form.fields.url);
-    schema.isValid(state.form.fields.url)
+    schema.isValid('http://' + state.form.fields.url)
       .then((result) => {
         state.form.valid = (result && hasFeedListURL);
       });
@@ -98,12 +98,15 @@ export default () => {
 
         feedList.push(newFeed);
         posts.push(...postsWithId);
-      }).catch(() => {
+      }).catch((e) => {
+        // console.log(e)
+        state.errors['404'] = 'Lol'
         form.processState = 'failure';
       }).finally(() => {
         form.fields.url = '';
         form.valid = false;
         form.processState = 'filling';
+        state.errors = {};
       });
   };
 

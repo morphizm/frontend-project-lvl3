@@ -1,4 +1,5 @@
 import { watch } from 'melanke-watchjs';
+import _ from 'lodash';
 import i18next from 'i18next';
 
 const renderItems = (items) => {
@@ -48,21 +49,29 @@ const render = (elements, state) => {
     content, urlInput, submit,
   } = elements;
 
-  // console.log(i18next.t('loading'))
-
-  watch(state, 'form', () => {
-    const { form: { valid, fields } } = state;
-    if (valid || fields.url === '') {
-      submit.removeAttribute('disabled');
+  watch(state.form, 'fields', () => {
+    const { form: { fields, errors } } = state;
+    const isValidUrl = !errors.url;
+    if (fields.url === '' || ) {
       urlInput.classList.remove('is-invalid');
-      return;
     }
-    submit.setAttribute('disabled', true);
-    urlInput.classList.add('is-invalid');
+    // } else if (valid) {
+    //   submit.removeAttribute('disabled');
+    //   urlInput.classList.remove('is-invalid');
+    // } else {
+    //   submit.setAttribute('disabled', true);
+    //   urlInput.classList.add('is-invalid');
+    // }
   });
 
-  // watch(state.form, 'fields', () => {
-  // });
+  watch(state.form, 'valid', () => {
+    const { valid } = state.form;
+    if (valid) {
+      submit.removeAttribute('disabled');
+    } else {
+      submit.setAttribute('disabled', true);
+    }
+  });
 
   watch(state, 'feedList', () => {
     content.innerHTML = '';
@@ -93,7 +102,6 @@ const render = (elements, state) => {
     switch (processState) {
       case 'filling': {
         deleteSpinner();
-        // submit.removeAttribute('disabled');
         break;
       }
       case 'pending': {
