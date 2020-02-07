@@ -46,13 +46,6 @@ const updateValidationState = (state) => {
 };
 
 export default () => {
-  const initLink = {
-    id: _.uniqueId(),
-    url: 'http://a.ru',
-    title: 'My title',
-    description: 'My description',
-  };
-
   const state = {
     form: {
       processState: 'filling',
@@ -61,14 +54,13 @@ export default () => {
       },
       valid: false,
     },
-    feedList: [initLink],
-    posts: [{ text: 'My text', link: 'my link', feedId: initLink.id }],
+    feedList: [],
+    posts: [],
     errors: {},
   };
 
+  const domparser = new DOMParser();
   const proxy = 'cors-anywhere.herokuapp.com';
-  const loremRss = 'https://lorem-rss.herokuapp.com/feed?unit=second&interval=10';
-  // const cv = 'https://cv.hexlet.io/resumes.rss';
 
   const elements = {
     container: document.querySelector('.container'),
@@ -83,7 +75,6 @@ export default () => {
     updateValidationState(state);
   };
 
-  const domparser = new DOMParser();
   const handleSubmit = (e) => {
     e.preventDefault();
     const {
@@ -123,29 +114,7 @@ export default () => {
   elements.urlInput.addEventListener('input', handleInput);
   elements.form.addEventListener('submit', handleSubmit);
 
-  doRequest(loremRss, proxy)
-    .then((e) => {
-      const { data } = e;
-      const rssDocument = domparser.parseFromString(data, 'text/xml');
-      const {
-        title, description, items, publishDate,
-      } = parse(rssDocument);
-      const newFeed = {
-        url: loremRss,
-        id: _.uniqueId(),
-        title,
-        description,
-        publishDate,
-      };
-      const postsWithId = items.map((post) => (
-        { ...post, id: _.uniqueId(), feedId: newFeed.id }
-      ));
-
-      state.feedList.push(newFeed);
-      state.posts.push(...postsWithId);
-    });
-
-  const repeat = () => {
+  const getNewFeedPosts = () => {
     const { feedList } = state;
     feedList.forEach((feed) => {
       const { url, id } = feed;
@@ -172,9 +141,9 @@ export default () => {
           state.posts.push(...postsWithId);
         });
     });
-    setTimeout(repeat, 5000);
+    setTimeout(getNewFeedPosts, 5000);
   };
 
-  repeat();
+  setTimeout(getNewFeedPosts, 5000);
   render(elements, state);
 };
