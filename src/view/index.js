@@ -52,16 +52,11 @@ const render = (elements, state) => {
   watch(state.form, 'fields', () => {
     const { form: { fields, errors } } = state;
     const isValidUrl = !errors.url;
-    if (fields.url === '' || ) {
+    if (fields.url === '' || isValidUrl) {
       urlInput.classList.remove('is-invalid');
+    } else {
+      urlInput.classList.add('is-invalid');
     }
-    // } else if (valid) {
-    //   submit.removeAttribute('disabled');
-    //   urlInput.classList.remove('is-invalid');
-    // } else {
-    //   submit.setAttribute('disabled', true);
-    //   urlInput.classList.add('is-invalid');
-    // }
   });
 
   watch(state.form, 'valid', () => {

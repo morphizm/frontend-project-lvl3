@@ -16,8 +16,20 @@ i18next.init({
   resources,
 });
 
+const validateUrl = (fields) => {
+  const { url } = fields;
+  const errors = {};
+  const schema = string().url();
+
+  const hasFeedListURL = state.feedList.every((list) => list.url !== state.form.fields.url);
+  schema.isValid(`http://${state.form.fields.url}`)
+    .then((result) => {
+      state.form.valid = (result && hasFeedListURL);
+    });
+};
+
 const updateValidationState = (state) => {
-  
+
 };
 
 // Предпочитайте композицию (пайплайн) вместо матрешки функций.
@@ -64,7 +76,7 @@ export default () => {
 
     const schema = string().url();
     const hasFeedListURL = state.feedList.every((list) => list.url !== state.form.fields.url);
-    schema.isValid('http://' + state.form.fields.url)
+    schema.isValid(`http://${state.form.fields.url}`)
       .then((result) => {
         state.form.valid = (result && hasFeedListURL);
       });
@@ -98,9 +110,9 @@ export default () => {
 
         feedList.push(newFeed);
         posts.push(...postsWithId);
-      }).catch((e) => {
+      }).catch(() => {
         // console.log(e)
-        state.errors['404'] = 'Lol'
+        // state.errors['404'] = 'Lol'
         form.processState = 'failure';
       }).finally(() => {
         form.fields.url = '';
