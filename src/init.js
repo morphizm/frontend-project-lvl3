@@ -8,7 +8,7 @@ import './styles/custom.scss';
 import parse from './parsers/rssParser';
 import render from './view';
 import resources from './locales';
-import request from './utils/request';
+import doRequest from './utils/request';
 
 i18next.init({
   lng: 'en',
@@ -67,7 +67,7 @@ export default () => {
   };
 
   const proxy = 'cors-anywhere.herokuapp.com';
-  // const loremRss = 'https://lorem-rss.herokuapp.com/feed';
+  const loremRss = 'https://lorem-rss.herokuapp.com/feed?unit=second&interval=10';
   // const cv = 'https://cv.hexlet.io/resumes.rss';
 
   const elements = {
@@ -94,7 +94,7 @@ export default () => {
       return;
     }
     form.processState = 'pending';
-    request(form.fields.url, proxy)
+    doRequest(form.fields.url, proxy)
       .then((result) => {
         const { data } = result;
         const rssDocument = domparser.parseFromString(data, 'text/xml');
@@ -123,24 +123,60 @@ export default () => {
   elements.urlInput.addEventListener('input', handleInput);
   elements.form.addEventListener('submit', handleSubmit);
 
-  // request('loremRss', proxy)
-  //   .then((e) => {
-  //     const { data } = e;
-  //     const rssDocument = domparser.parseFromString(data, 'text/xml');
-  //     const { title, description, items } = parse(rssDocument);
-  //     const newFeed = {
-  //       url: loremRss,
-  //       id: _.uniqueId(),
-  //       title,
-  //       description,
-  //     };
-  //     const postsWithId = items.map((post) => (
-  //       { ...post, id: _.uniqueId(), feedId: newFeed.id }
-  //     ));
+  doRequest(loremRss, proxy)
+    .then((e) => {
+      const { data } = e;
+      const rssDocument = domparser.parseFromString(data, 'text/xml');
+      const {
+        title, description, items, publishDate,
+      } = parse(rssDocument);
+      const newFeed = {
+        url: loremRss,
+        id: _.uniqueId(),
+        title,
+        description,
+        publishDate,
+      };
+      const postsWithId = items.map((post) => (
+        { ...post, id: _.uniqueId(), feedId: newFeed.id }
+      ));
 
-  //     state.feedList.push(newFeed);
-  //     state.posts.push(...postsWithId);
-  //   });
+      state.feedList.push(newFeed);
+      state.posts.push(...postsWithId);
+    });
 
+  const repeat = () => {
+    const { feedList } = state;
+    feedList.forEach((feed) => {
+      const { url, id } = feed;
+      const oldFeedPublishDate = feed.publishDate;
+      doRequest(url, proxy)
+        .then((result) => {
+          const { data } = result;
+          const rssDocument = domparser.parseFromString(data, 'text/xml');
+          const parsedRss = parse(rssDocument);
+          const newFeedPublishDate = parsedRss.publishDate;
+          if (newFeedPublishDate === oldFeedPublishDate) {
+            return;
+          }
+          const { items } = parsedRss;
+          const newItems = items.filter((item) => {
+            const { publishDate } = item;
+
+            return oldFeedPublishDate < publishDate;
+          });
+
+          const postsWithId = newItems.map((post) => (
+            { ...post, id: _.uniqueId(), feedId: id }
+          ));
+
+          feed.publishDate = newFeedPublishDate;
+          state.posts.push(...postsWithId);
+        });
+    });
+    setTimeout(repeat, 5000);
+  };
+
+  repeat();
   render(elements, state);
 };

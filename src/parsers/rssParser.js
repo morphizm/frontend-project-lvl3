@@ -1,25 +1,35 @@
-const getItemLink = (item) => {
+const getPublishDate = (item) => {
+  const pubDateElement = item.querySelector('pubDate');
+  const publishDate = pubDateElement.textContent;
+  return new Date(publishDate);
+};
+
+const getLink = (item) => {
   const linkElement = item.querySelector('link');
   const link = linkElement.textContent;
   return link;
 };
 
-const getItemContent = (item) => {
+const getDescription = (item) => {
   const contentElement = item.querySelector('description');
   const content = contentElement.textContent;
   return content;
 };
 
-const parse = (rss) => {
-  const titleElement = rss.querySelector('title');
+const parse = (rssDocument) => {
+  const titleElement = rssDocument.querySelector('title');
   const title = titleElement.textContent;
-  const descriptionElement = rss.querySelector('description');
-  const description = descriptionElement.textContent;
-  const itemElements = rss.querySelectorAll('item');
-  const items = [...itemElements].map((i) => ({ text: getItemContent(i), link: getItemLink(i) }));
+  const description = getDescription(rssDocument);
+  const publishDate = getPublishDate(rssDocument);
+  const itemElements = rssDocument.querySelectorAll('item');
+
+  const items = [...itemElements].map((item) => (
+    { text: getDescription(item), link: getLink(item), publishDate: getPublishDate(item) }));
+
   return {
     title,
     description,
+    publishDate,
     items,
   };
 };
