@@ -4,10 +4,8 @@
 [![Linter](https://github.com/morphizm/frontend-project-lvl3/workflows/Linter/badge.svg?branch=master)](https://github.com/morphizm/frontend-project-lvl3/actions)
 
 ## Domain name
-```sh
 [https://frontend-project-lvl3-five.now.sh](https://frontend-project-lvl3-five.now.sh)
 [http://stupid-self.surge.sh](http://stupid-self.surge.sh)
-```
 
 ## Setup 
 
