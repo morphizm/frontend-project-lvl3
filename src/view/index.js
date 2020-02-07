@@ -1,5 +1,4 @@
 import { watch } from 'melanke-watchjs';
-import _ from 'lodash';
 import i18next from 'i18next';
 
 const renderItems = (items) => {
@@ -50,7 +49,7 @@ const render = (elements, state) => {
   } = elements;
 
   watch(state.form, 'fields', () => {
-    const { form: { fields, errors } } = state;
+    const { form: { fields }, errors } = state;
     const isValidUrl = !errors.url;
     if (fields.url === '' || isValidUrl) {
       urlInput.classList.remove('is-invalid');

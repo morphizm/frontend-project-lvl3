@@ -16,24 +16,27 @@ i18next.init({
   resources,
 });
 
-const validateUrl = (fields) => {
-  const { url } = fields;
+const validateUrl = (url, feedList) => {
   const errors = {};
   const schema = string().url();
 
-  const hasFeedListURL = state.feedList.every((list) => list.url !== state.form.fields.url);
-  schema.isValid(`http://${state.form.fields.url}`)
+  const hasFeedListCurrentUrl = feedList.every((list) => list.url !== url);
+  schema.isValid(`http://${url}`)
     .then((result) => {
-      state.form.valid = (result && hasFeedListURL);
+      if (hasFeedListCurrentUrl && !result) {
+        errors.url = true;
+      }
     });
+
+  return errors;
 };
 
 const updateValidationState = (state) => {
-
+  const errors = validateUrl(state.form.fields.url, state.feedList);
+  state.form.errors = errors;
+  state.form.valid = _.isEqual(errors, {});
 };
 
-// Предпочитайте композицию (пайплайн) вместо матрешки функций.
-// valid, invalid, blank
 export default () => {
   const initLink = {
     id: _.uniqueId(),
@@ -69,17 +72,7 @@ export default () => {
 
   const handleInput = ({ target: { value } }) => {
     state.form.fields.url = value;
-    if (value === '') {
-      state.form.valid = false;
-      return;
-    }
-
-    const schema = string().url();
-    const hasFeedListURL = state.feedList.every((list) => list.url !== state.form.fields.url);
-    schema.isValid(`http://${state.form.fields.url}`)
-      .then((result) => {
-        state.form.valid = (result && hasFeedListURL);
-      });
+    updateValidationState(state);
   };
 
   const domparser = new DOMParser();
@@ -111,8 +104,6 @@ export default () => {
         feedList.push(newFeed);
         posts.push(...postsWithId);
       }).catch(() => {
-        // console.log(e)
-        // state.errors['404'] = 'Lol'
         form.processState = 'failure';
       }).finally(() => {
         form.fields.url = '';
