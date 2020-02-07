@@ -28,28 +28,39 @@ const renderSpinner = (element) => {
   element.prepend(div);
 };
 
-const deleteSpinner = () => {
+const removeSpinner = () => {
   const spinnerElement = document.querySelector('.spinner-border');
   if (spinnerElement) {
     spinnerElement.remove();
   }
 };
 
-const renderFailLoadResource = (element) => {
+const renderErrorAlert = (element, message) => {
+  const errorElement = document.querySelector('[type="error"]');
+  if (errorElement) {
+    return;
+  }
   const div = document.createElement('div');
   div.classList.add('alert', 'alert-info');
   div.setAttribute('role', 'alert');
-  div.innerHTML = i18next.t('failLoadResource');
+  div.setAttribute('type', 'error');
+  div.innerHTML = message;
   element.prepend(div);
+};
+
+const removeErrorAlert = () => {
+  const errorElement = document.querySelector('[type="error"]');
+  errorElement.remove();
 };
 
 const render = (elements, state) => {
   const {
-    content, urlInput, submit,
+    content, urlInput, submit, container,
   } = elements;
 
   watch(state.form, 'fields', () => {
     const { form: { fields }, errors } = state;
+
     const isValidUrl = !errors.url;
     if (fields.url === '' || isValidUrl) {
       urlInput.classList.remove('is-invalid');
@@ -95,7 +106,7 @@ const render = (elements, state) => {
     const { form: { processState } } = state;
     switch (processState) {
       case 'filling': {
-        deleteSpinner();
+        removeSpinner();
         break;
       }
       case 'pending': {
@@ -104,12 +115,17 @@ const render = (elements, state) => {
         urlInput.value = '';
         break;
       }
-      case 'failure': {
-        renderFailLoadResource(content);
-        break;
-      }
       default:
         throw new Error('WHA?t');
+    }
+  });
+
+  watch(state, 'errors', () => {
+    const { errors: { error } } = state;
+    if (error) {
+      const message = i18next.t(error);
+      renderErrorAlert(container, message);
+      setTimeout(removeErrorAlert, 15000);
     }
   });
 };

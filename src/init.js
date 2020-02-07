@@ -16,25 +16,33 @@ i18next.init({
   resources,
 });
 
-const validateUrl = (url, feedList) => {
+const validate = (fields, options) => {
+  const { feedList } = options;
+  const { url } = fields;
   const errors = {};
-  const schema = string().url();
 
-  const hasFeedListCurrentUrl = feedList.every((list) => list.url !== url);
-  schema.isValid(`http://${url}`)
+  const schema = string().url();
+  const hasFeedListCurrentUrl = !feedList.every((list) => list.url !== url);
+  const hasUrlHttp = _.startsWith(url, 'http://') || _.startsWith(url, 'https://');
+  const newUrl = hasUrlHttp ? url : `https://${url}`;
+  const urlErrors = schema.isValid(newUrl)
     .then((result) => {
-      if (hasFeedListCurrentUrl && !result) {
+      if (hasFeedListCurrentUrl || !result) {
         errors.url = true;
       }
+      return errors;
     });
 
-  return errors;
+  return urlErrors;
 };
 
 const updateValidationState = (state) => {
-  const errors = validateUrl(state.form.fields.url, state.feedList);
-  state.form.errors = errors;
-  state.form.valid = _.isEqual(errors, {});
+  const { feedList, form: { fields } } = state;
+  validate(fields, { feedList })
+    .then((errors) => {
+      state.errors = errors;
+      state.form.valid = _.isEqual(errors, {});
+    });
 };
 
 export default () => {
@@ -59,7 +67,7 @@ export default () => {
   };
 
   const proxy = 'cors-anywhere.herokuapp.com';
-  const loremRss = 'https://lorem-rss.herokuapp.com/feed';
+  // const loremRss = 'https://lorem-rss.herokuapp.com/feed';
   // const cv = 'https://cv.hexlet.io/resumes.rss';
 
   const elements = {
@@ -103,37 +111,36 @@ export default () => {
 
         feedList.push(newFeed);
         posts.push(...postsWithId);
-      }).catch(() => {
-        form.processState = 'failure';
+      }).catch((error) => {
+        state.errors = { error: error.name };
       }).finally(() => {
         form.fields.url = '';
         form.valid = false;
         form.processState = 'filling';
-        state.errors = {};
       });
   };
 
   elements.urlInput.addEventListener('input', handleInput);
   elements.form.addEventListener('submit', handleSubmit);
 
-  request(loremRss, proxy)
-    .then((e) => {
-      const { data } = e;
-      const rssDocument = domparser.parseFromString(data, 'text/xml');
-      const { title, description, items } = parse(rssDocument);
-      const newFeed = {
-        url: loremRss,
-        id: _.uniqueId(),
-        title,
-        description,
-      };
-      const postsWithId = items.map((post) => (
-        { ...post, id: _.uniqueId(), feedId: newFeed.id }
-      ));
+  // request('loremRss', proxy)
+  //   .then((e) => {
+  //     const { data } = e;
+  //     const rssDocument = domparser.parseFromString(data, 'text/xml');
+  //     const { title, description, items } = parse(rssDocument);
+  //     const newFeed = {
+  //       url: loremRss,
+  //       id: _.uniqueId(),
+  //       title,
+  //       description,
+  //     };
+  //     const postsWithId = items.map((post) => (
+  //       { ...post, id: _.uniqueId(), feedId: newFeed.id }
+  //     ));
 
-      state.feedList.push(newFeed);
-      state.posts.push(...postsWithId);
-    });
+  //     state.feedList.push(newFeed);
+  //     state.posts.push(...postsWithId);
+  //   });
 
   render(elements, state);
 };
