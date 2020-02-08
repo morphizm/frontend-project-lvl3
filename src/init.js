@@ -1,7 +1,7 @@
 import '@babel/polyfill';
 import 'bootstrap';
 import { string } from 'yup';
-import { startsWith, isEqual, uniqueId } from 'lodash';
+import _ from 'lodash';
 import i18next from 'i18next';
 
 import './styles/custom.scss';
@@ -23,7 +23,7 @@ const validate = (fields, options) => {
 
   const schema = string().url();
   const hasFeedListCurrentUrl = !feedList.every((list) => list.url !== url);
-  const hasUrlHttp = startsWith(url, 'http://') || startsWith(url, 'https://');
+  const hasUrlHttp = _.startsWith(url, 'http://') || _.startsWith(url, 'https://');
   const newUrl = hasUrlHttp ? url : `https://${url}`;
   const urlErrors = schema.isValid(newUrl)
     .then((result) => {
@@ -41,7 +41,7 @@ const updateValidationState = (state) => {
   validate(fields, { feedList })
     .then((errors) => {
       state.errors = errors;
-      state.form.valid = isEqual(errors, {});
+      state.form.valid = _.isEqual(errors, {});
     });
 };
 
@@ -91,13 +91,13 @@ export default () => {
         const rssDocument = domparser.parseFromString(data, 'text/xml');
         const { title, description, items } = parse(rssDocument);
         const newFeed = {
-          id: uniqueId(),
+          id: _.uniqueId(),
           url: form.fields.url,
           title,
           description,
         };
         const postsWithId = items.map((post) => (
-          { ...post, id: uniqueId(), feedId: newFeed.id }
+          { ...post, id: _.uniqueId(), feedId: newFeed.id }
         ));
 
         feedList.push(newFeed);
@@ -134,7 +134,7 @@ export default () => {
             return oldFeedPublishDate < publishDate;
           });
           const postsWithId = newItems.map((post) => (
-            { ...post, id: uniqueId(), feedId: id }
+            { ...post, id: _.uniqueId(), feedId: id }
           ));
 
           feed.publishDate = newFeedPublishDate;
