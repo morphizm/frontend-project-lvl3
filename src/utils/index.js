@@ -1,5 +1,5 @@
-export const makeUrl = (value, base = window.location.href) => {
-  const url = new URL(value, base);
+export const makeUrl = (value) => {
+  const url = new URL(value, window.location.href);
   const newUrl = window.location.origin === url.origin ? `https://${value}` : url.href;
   return newUrl;
 };
