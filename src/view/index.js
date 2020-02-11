@@ -2,8 +2,8 @@ import { watch } from 'melanke-watchjs';
 import i18next from 'i18next';
 
 const renderItems = (items) => {
-  const result = items.map((i) => {
-    const { text, link } = i;
+  const result = items.map((item) => {
+    const { text, link } = item;
     const html = `
       <li class="list-group-item">
         <a href="${link}" target="_blank">${text}</a>
@@ -58,11 +58,11 @@ const render = (elements, state) => {
     content, urlInput, submit, container,
   } = elements;
 
-  watch(state.form, 'fields', () => {
-    const { form: { fields }, errors } = state;
-
+  watch(state.form, 'errors', () => {
+    const { errors } = state.form;
     const isValidUrl = !errors.url;
-    if (fields.url === '' || isValidUrl) {
+
+    if (isValidUrl) {
       urlInput.classList.remove('is-invalid');
     } else {
       urlInput.classList.add('is-invalid');

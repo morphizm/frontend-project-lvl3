@@ -1,14 +1,14 @@
-import '@babel/polyfill';
 import 'bootstrap';
 import { string } from 'yup';
 import _ from 'lodash';
 import i18next from 'i18next';
+import axios from 'axios';
 
 import './styles/custom.scss';
-import parse from './rssParser';
+import parse from './xmlParser';
 import render from './view';
 import resources from './locales';
-import { doRequest, makeUrl } from './utils';
+import { makeUrl, getRssData } from './utils';
 
 i18next.init({
   lng: 'en',
@@ -21,20 +21,26 @@ const validate = (fields, options) => {
   const { url } = fields;
   const errors = {};
 
-  const schema = string().url();
-  const hasFeedListCurrentUrl = !feedList.every((list) => list.url !== url);
-  const isUrl = schema.isValidSync(url);
-  if (hasFeedListCurrentUrl || !isUrl) {
-    errors.url = true;
+  if (url) {
+    const schema = string().url();
+    const hasFeedListCurrentUrl = !feedList.every((list) => list.url !== url);
+    const newUrl = makeUrl(url);
+    const isUrl = schema.isValidSync(newUrl);
+    if (hasFeedListCurrentUrl || !isUrl) {
+      errors.url = true;
+    }
   }
+
   return errors;
 };
+
+const validatePresense = (fields) => Object.values(fields).every((f) => f !== '');
 
 const updateValidationState = (state) => {
   const { feedList, form: { fields } } = state;
   const errors = validate(fields, { feedList });
-  state.errors = errors;
-  state.form.valid = _.isEqual(errors, {});
+  state.form.errors = errors;
+  state.form.valid = _.isEqual(errors, {}) && validatePresense(fields);
 };
 
 export default () => {
@@ -45,6 +51,7 @@ export default () => {
         url: '',
       },
       valid: false,
+      errors: {},
     },
     feedList: [],
     posts: [],
@@ -62,7 +69,7 @@ export default () => {
   };
 
   const handleInput = ({ target: { value } }) => {
-    state.form.fields.url = makeUrl(value);
+    state.form.fields.url = value;
     updateValidationState(state);
   };
 
@@ -76,10 +83,11 @@ export default () => {
       return;
     }
     form.processState = 'pending';
-    doRequest(form.fields.url, proxy)
+
+    axios.get(`https://${proxy}/${form.fields.url}`)
       .then(({ data }) => {
-        // const rssDocument = domparser.parseFromString(data, 'text/xml');
-        const { title, description, items } = parse(data);
+        const rssDocument = parse(data);
+        const { title, description, items } = getRssData(rssDocument);
         const newFeed = {
           id: _.uniqueId(),
           url: form.fields.url,
@@ -104,14 +112,15 @@ export default () => {
   elements.urlInput.addEventListener('input', handleInput);
   elements.form.addEventListener('submit', handleSubmit);
 
-  const getNewFeedPosts = () => {
+  const getDifferenceByFeedPosts = () => {
     const { feedList } = state;
     feedList.forEach((feed) => {
       const { url, id } = feed;
       const oldFeedPublishDate = feed.publishDate;
-      doRequest(url, proxy)
+      axios.get(`https://${proxy}/${url}`)
         .then(({ data }) => {
-          const parsedRss = parse(data);
+          const rssDocument = parse(data);
+          const parsedRss = getRssData(rssDocument);
           const newFeedPublishDate = parsedRss.publishDate;
           if (newFeedPublishDate === oldFeedPublishDate) {
             return;
@@ -129,9 +138,9 @@ export default () => {
           state.posts.push(...postsWithId);
         });
     });
-    setTimeout(getNewFeedPosts, 5000);
+    setTimeout(getDifferenceByFeedPosts, 5000);
   };
 
-  setTimeout(getNewFeedPosts, 5000);
+  setTimeout(getDifferenceByFeedPosts, 5000);
   render(elements, state);
 };
