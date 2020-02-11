@@ -4,3 +4,4 @@ dist
 assets
 .now
 public
+package-lock.json

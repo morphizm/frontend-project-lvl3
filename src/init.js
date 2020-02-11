@@ -5,10 +5,10 @@ import _ from 'lodash';
 import i18next from 'i18next';
 
 import './styles/custom.scss';
-import parse from './parsers/rssParser';
+import parse from './rssParser';
 import render from './view';
 import resources from './locales';
-import doRequest from './utils/request';
+import { doRequest, makeUrl } from './utils';
 
 i18next.init({
   lng: 'en',
@@ -23,26 +23,18 @@ const validate = (fields, options) => {
 
   const schema = string().url();
   const hasFeedListCurrentUrl = !feedList.every((list) => list.url !== url);
-  const hasUrlHttp = _.startsWith(url, 'http://') || _.startsWith(url, 'https://');
-  const newUrl = hasUrlHttp ? url : `https://${url}`;
-  const urlErrors = schema.isValid(newUrl)
-    .then((result) => {
-      if (hasFeedListCurrentUrl || !result) {
-        errors.url = true;
-      }
-      return errors;
-    });
-
-  return urlErrors;
+  const isUrl = schema.isValidSync(url);
+  if (hasFeedListCurrentUrl || !isUrl) {
+    errors.url = true;
+  }
+  return errors;
 };
 
 const updateValidationState = (state) => {
   const { feedList, form: { fields } } = state;
-  validate(fields, { feedList })
-    .then((errors) => {
-      state.errors = errors;
-      state.form.valid = _.isEqual(errors, {});
-    });
+  const errors = validate(fields, { feedList });
+  state.errors = errors;
+  state.form.valid = _.isEqual(errors, {});
 };
 
 export default () => {
@@ -59,7 +51,6 @@ export default () => {
     errors: {},
   };
 
-  const domparser = new DOMParser();
   const proxy = 'cors-anywhere.herokuapp.com';
 
   const elements = {
@@ -71,7 +62,7 @@ export default () => {
   };
 
   const handleInput = ({ target: { value } }) => {
-    state.form.fields.url = value;
+    state.form.fields.url = makeUrl(value);
     updateValidationState(state);
   };
 
@@ -86,10 +77,9 @@ export default () => {
     }
     form.processState = 'pending';
     doRequest(form.fields.url, proxy)
-      .then((result) => {
-        const { data } = result;
-        const rssDocument = domparser.parseFromString(data, 'text/xml');
-        const { title, description, items } = parse(rssDocument);
+      .then(({ data }) => {
+        // const rssDocument = domparser.parseFromString(data, 'text/xml');
+        const { title, description, items } = parse(data);
         const newFeed = {
           id: _.uniqueId(),
           url: form.fields.url,
@@ -120,10 +110,8 @@ export default () => {
       const { url, id } = feed;
       const oldFeedPublishDate = feed.publishDate;
       doRequest(url, proxy)
-        .then((result) => {
-          const { data } = result;
-          const rssDocument = domparser.parseFromString(data, 'text/xml');
-          const parsedRss = parse(rssDocument);
+        .then(({ data }) => {
+          const parsedRss = parse(data);
           const newFeedPublishDate = parsedRss.publishDate;
           if (newFeedPublishDate === oldFeedPublishDate) {
             return;

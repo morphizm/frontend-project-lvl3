@@ -19,7 +19,9 @@ const getTitle = (item) => {
   return titleElement.textContent;
 };
 
-const parse = (rssDocument) => {
+const parse = (data) => {
+  const domparser = new DOMParser();
+  const rssDocument = domparser.parseFromString(data, 'text/xml');
   const title = getTitle(rssDocument);
   const description = getDescription(rssDocument);
   const publishDate = getPublishDate(rssDocument);
