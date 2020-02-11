@@ -78,7 +78,7 @@ const render = (elements, state) => {
     }
   });
 
-  watch(state, 'feedList', () => {
+  watch(state, ['feedList', 'posts'], () => {
     content.innerHTML = '';
     const { feedList, posts } = state;
     feedList.forEach((list) => {
