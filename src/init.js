@@ -39,7 +39,7 @@ const validatePresense = (fields) => Object.values(fields).every((f) => f !== ''
 const updateValidationState = (state) => {
   const { feedList, form: { fields } } = state;
   const errors = validate(fields, { feedList });
-  state.form.errors = errors;
+  state.errors = errors;
   state.form.valid = _.isEqual(errors, {}) && validatePresense(fields);
 };
 
@@ -51,7 +51,6 @@ export default () => {
         url: '',
       },
       valid: false,
-      errors: {},
     },
     feedList: [],
     posts: [],

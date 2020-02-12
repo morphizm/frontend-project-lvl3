@@ -58,17 +58,6 @@ const render = (elements, state) => {
     content, urlInput, submit, container,
   } = elements;
 
-  watch(state.form, 'errors', () => {
-    const { errors } = state.form;
-    const isValidUrl = !errors.url;
-
-    if (isValidUrl) {
-      urlInput.classList.remove('is-invalid');
-    } else {
-      urlInput.classList.add('is-invalid');
-    }
-  });
-
   watch(state.form, 'valid', () => {
     const { valid } = state.form;
     if (valid) {
@@ -120,11 +109,18 @@ const render = (elements, state) => {
   });
 
   watch(state, 'errors', () => {
-    const { errors: { error } } = state;
+    const { errors: { error, url } } = state;
+    const isValidUrl = !url;
+
     if (error) {
       const message = i18next.t(error);
       renderErrorAlert(container, message);
       setTimeout(removeErrorAlert, 15000);
+    }
+    if (isValidUrl) {
+      urlInput.classList.remove('is-invalid');
+    } else {
+      urlInput.classList.add('is-invalid');
     }
   });
 };
