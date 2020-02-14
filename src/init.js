@@ -27,8 +27,8 @@ const updateValidationState = (state) => {
     schema.validateSync(fields);
     state.errors = {};
     state.form.valid = true;
-  } catch {
-    state.errors = { url: true };
+  } catch (e) {
+    state.errors = { [e.path]: true };
     state.form.valid = false;
   }
 };
