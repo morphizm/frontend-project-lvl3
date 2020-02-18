@@ -5,7 +5,7 @@ import axios from 'axios';
 
 import './styles/custom.scss';
 import parse from './xmlParser';
-import render from './view';
+import initWatchers from './view';
 import resources from './locales';
 
 i18next.init({
@@ -129,5 +129,5 @@ export default () => {
   };
 
   setTimeout(getDifferenceByFeedPosts, 5000);
-  render(elements, state);
+  initWatchers(elements, state);
 };

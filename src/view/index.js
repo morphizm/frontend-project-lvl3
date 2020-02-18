@@ -53,7 +53,7 @@ const removeErrorAlert = () => {
   errorElement.remove();
 };
 
-const render = (elements, state) => {
+const initWatchers = (elements, state) => {
   const {
     content, urlInput, submit, container,
   } = elements;
@@ -125,4 +125,4 @@ const render = (elements, state) => {
   });
 };
 
-export default render;
+export default initWatchers;
