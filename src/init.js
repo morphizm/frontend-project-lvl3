@@ -1,6 +1,5 @@
 import { string, object } from 'yup';
-// import uniqueId from 'lodash/uniqueId';
-import { uniqueId } from 'lodash';
+import uniqueId from 'lodash/uniqueId';
 import i18next from 'i18next';
 import axios from 'axios';
 
