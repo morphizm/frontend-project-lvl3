@@ -1,5 +1,5 @@
 import { string, object } from 'yup';
-import _ from 'lodash';
+import uniqueId from 'lodash/uniqueId';
 import i18next from 'i18next';
 import axios from 'axios';
 
@@ -77,13 +77,13 @@ export default () => {
       .then(({ data }) => {
         const { title, description, items } = parse(data);
         const newFeed = {
-          id: _.uniqueId(),
+          id: uniqueId(),
           url: form.fields.url,
           title,
           description,
         };
         const postsWithId = items.map((post) => (
-          { ...post, id: _.uniqueId(), feedId: newFeed.id }
+          { ...post, id: uniqueId(), feedId: newFeed.id }
         ));
 
         feedList.push(newFeed);
@@ -118,7 +118,7 @@ export default () => {
             return oldFeedPublishDate < publishDate;
           });
           const postsWithId = newItems.map((post) => (
-            { ...post, id: _.uniqueId(), feedId: id }
+            { ...post, id: uniqueId(), feedId: id }
           ));
 
           feed.publishDate = newFeedPublishDate;
